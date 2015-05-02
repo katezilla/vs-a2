@@ -1,0 +1,1 @@
+java -jar GGTMonitor.jar <MonitorName> -ORBInitialHost <host> -ORBInitialPort <port>
