@@ -1,14 +1,17 @@
 #ifndef __Koordinator_idl__
 #define __Koordinator_idl__
 
+
 module koordinator {
+    typedef sequence<string> ProzessIds;
+    
 	interface Koordinator {
 
 		void anmelden(in long typId, in string prozessId);
 
 		void informieren(in string prozessId, in long sequenzNr, in boolean termStatus, in long letzteZahl);
 
-		sequence<string> getStarterIds();
+		ProzessIds getStarterIds();
 
 		void berechnen(in string monitorId, in long anzahlGgtLower, in long anzahlGgtUpper, in long delayZeitLower, in long delayZeitUpper, in long termAbfragePeriode, in long gewuenschterGgt);
 
