@@ -8,13 +8,13 @@ module ggTProcess {
 module ggTProcess {
 	interface GgTProcess {
 
-		void setStartwerte(inout ::CORBA::WStringValue aLinkeProzessId, inout ::CORBA::WStringValue aRechteProzessId, inout long long aStartwertMi, inout long aDelayZeit, inout ::CORBA::WStringValue aMonitorId);
+		void setStartwerte(inout ::CORBA::WStringValue linkeProzessId, inout ::CORBA::WStringValue rechteProzessId, inout long long startwertMi, inout long delayZeit, inout ::CORBA::WStringValue monitorId);
 
-		void rechnen(inout ::CORBA::WStringValue aProzessIdAbsender, inout long long aNum);
+		void rechnen(inout ::CORBA::WStringValue prozessIdAbsender, inout long long num);
 
-		void markerAuswerten(inout long aSeqNr, inout ::CORBA::WStringValue aProzessIdAbsender);
+		void markerAuswerten(inout long seqNr, inout ::CORBA::WStringValue prozessIdAbsender);
 
-		void beenden(inout ::CORBA::WStringValue aProzessIdAbsender);
+		void beenden(inout ::CORBA::WStringValue prozessIdAbsender);
 	};
 };
 

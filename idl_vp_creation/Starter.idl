@@ -8,11 +8,11 @@ module starter {
 module starter {
 	interface Starter {
 
-		void setAnzahlProzesse(inout long aAnzahl);
+		void setAnzahlProzesse(inout long anzahl);
 
-		void beenden(inout ::CORBA::WStringValue aProzessIdAbsender);
+		void beenden(inout ::CORBA::WStringValue prozessIdAbsender);
 
-		void beendeProzesse(inout ::CORBA::WStringValue aProzessIdAbsender);
+		void beendeProzesse(inout ::CORBA::WStringValue prozessIdAbsender);
 	};
 };
 

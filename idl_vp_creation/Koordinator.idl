@@ -8,15 +8,15 @@ module koordinator {
 module koordinator {
 	interface Koordinator {
 
-		void anmelden(inout long aTypId, inout ::CORBA::WStringValue aProzessId);
+		void anmelden(inout long typId, inout ::CORBA::WStringValue prozessId);
 
-		void informieren(inout ::CORBA::WStringValue aProzessId, inout long aSequenzNr, inout boolean aTermStatus, inout long long aLetzteZahl);
+		void informieren(inout ::CORBA::WStringValue prozessId, inout long sequenzNr, inout boolean termStatus, inout long long letzteZahl);
 
 		::org::omg::boxedRMI::seq1___CORBA__WStringValue getStarterIds();
 
-		void berechnen(inout ::CORBA::WStringValue aMonitorId, inout long aAnzahlGgtLower, inout long aAnzahlGgtUpper, inout long aDelayZeitLower, inout long aDelayZeitUpper, inout long aTermAbfragePeriode, inout long aGewuenschterGgt);
+		void berechnen(inout ::CORBA::WStringValue monitorId, inout long anzahlGgtLower, inout long anzahlGgtUpper, inout long delayZeitLower, inout long delayZeitUpper, inout long termAbfragePeriode, inout long gewuenschterGgt);
 
-		void beenden(inout ::CORBA::WStringValue aProzessIdAbsender);
+		void beenden(inout ::CORBA::WStringValue prozessIdAbsender);
 	};
 };
 

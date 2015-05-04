@@ -13,15 +13,15 @@ module monitor {
 module monitor {
 	interface Monitor {
 
-		void ring(inout monitor::ProzessIds aProzessIds);
+		void ring(inout monitor::ProzessIds prozessIds);
 
-		void startzahlen(inout monitor::Startzahlen aStartzahlen);
+		void startzahlen(inout monitor::Startzahlen startzahlen);
 
-		void rechnen(inout U0020string aProzessId, inout U0020string aProzessIdAbsender, inout long long aNum);
+		void rechnen(inout U0020string prozessId, inout U0020string prozessIdAbsender, inout long long num);
 
-		void terminieren(inout U0020string aProzessId, inout U0020string aProzessIdAbsender, inout boolean aTerminiere);
+		void terminieren(inout U0020string prozessId, inout U0020string prozessIdAbsender, inout boolean terminiere);
 
-		void ergebnis(inout U0020string aProzessId, inout long long aNum);
+		void ergebnis(inout U0020string prozessId, inout long long num);
 	};
 };
 
