@@ -2,17 +2,13 @@
 #define __Starter_idl__
 
 module starter {
-	interface Starter;
-};
-
-module starter {
 	interface Starter {
 
-		void setAnzahlProzesse(inout long anzahl);
+		void setAnzahlProzesse(in long anzahl);
 
-		void beenden(inout ::CORBA::WStringValue prozessIdAbsender);
+		void beenden(in string prozessIdAbsender);
 
-		void beendeProzesse(inout ::CORBA::WStringValue prozessIdAbsender);
+		void beendeProzesse(in string prozessIdAbsender);
 	};
 };
 

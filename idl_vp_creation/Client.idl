@@ -2,10 +2,6 @@
 #define __Client_idl__
 
 module client {
-	interface Client;
-};
-
-module client {
 	interface Client {
 	};
 };

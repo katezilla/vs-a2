@@ -2,21 +2,17 @@
 #define __Koordinator_idl__
 
 module koordinator {
-	interface Koordinator;
-};
-
-module koordinator {
 	interface Koordinator {
 
-		void anmelden(inout long typId, inout ::CORBA::WStringValue prozessId);
+		void anmelden(in long typId, in string prozessId);
 
-		void informieren(inout ::CORBA::WStringValue prozessId, inout long sequenzNr, inout boolean termStatus, inout long long letzteZahl);
+		void informieren(in string prozessId, in long sequenzNr, in boolean termStatus, in long letzteZahl);
 
-		::org::omg::boxedRMI::seq1___CORBA__WStringValue getStarterIds();
+		sequence<string> getStarterIds();
 
-		void berechnen(inout ::CORBA::WStringValue monitorId, inout long anzahlGgtLower, inout long anzahlGgtUpper, inout long delayZeitLower, inout long delayZeitUpper, inout long termAbfragePeriode, inout long gewuenschterGgt);
+		void berechnen(in string monitorId, in long anzahlGgtLower, in long anzahlGgtUpper, in long delayZeitLower, in long delayZeitUpper, in long termAbfragePeriode, in long gewuenschterGgt);
 
-		void beenden(inout ::CORBA::WStringValue prozessIdAbsender);
+		void beenden(in string prozessIdAbsender);
 	};
 };
 

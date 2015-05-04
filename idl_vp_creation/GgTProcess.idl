@@ -2,19 +2,15 @@
 #define __GgTProcess_idl__
 
 module ggTProcess {
-	interface GgTProcess;
-};
-
-module ggTProcess {
 	interface GgTProcess {
 
-		void setStartwerte(inout ::CORBA::WStringValue linkeProzessId, inout ::CORBA::WStringValue rechteProzessId, inout long long startwertMi, inout long delayZeit, inout ::CORBA::WStringValue monitorId);
+		void setStartwerte(in string linkeProzessId, in string rechteProzessId, in long startwertMi, in long delayZeit, in string monitorId);
 
-		void rechnen(inout ::CORBA::WStringValue prozessIdAbsender, inout long long num);
+		void rechnen(in string prozessIdAbsender, in long num);
 
-		void markerAuswerten(inout long seqNr, inout ::CORBA::WStringValue prozessIdAbsender);
+		void markerAuswerten(in long seqNr, in string prozessIdAbsender);
 
-		void beenden(inout ::CORBA::WStringValue prozessIdAbsender);
+		void beenden(in string prozessIdAbsender);
 	};
 };
 
