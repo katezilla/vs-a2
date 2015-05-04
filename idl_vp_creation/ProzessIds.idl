@@ -1,0 +1,13 @@
+#ifndef __ProzessIds_idl__
+#define __ProzessIds_idl__
+
+module monitor {
+	valuetype ProzessIds;
+};
+
+module monitor {
+	valuetype ProzessIds {
+	};
+};
+
+#endif

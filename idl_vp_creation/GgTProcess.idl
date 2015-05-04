@@ -1,0 +1,21 @@
+#ifndef __GgTProcess_idl__
+#define __GgTProcess_idl__
+
+module ggTProcess {
+	interface GgTProcess;
+};
+
+module ggTProcess {
+	interface GgTProcess {
+
+		void setStartwerte(inout ::CORBA::WStringValue aLinkeProzessId, inout ::CORBA::WStringValue aRechteProzessId, inout long long aStartwertMi, inout long aDelayZeit, inout ::CORBA::WStringValue aMonitorId);
+
+		void rechnen(inout ::CORBA::WStringValue aProzessIdAbsender, inout long long aNum);
+
+		void markerAuswerten(inout long aSeqNr, inout ::CORBA::WStringValue aProzessIdAbsender);
+
+		void beenden(inout ::CORBA::WStringValue aProzessIdAbsender);
+	};
+};
+
+#endif

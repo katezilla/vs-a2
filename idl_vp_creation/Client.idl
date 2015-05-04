@@ -1,0 +1,13 @@
+#ifndef __Client_idl__
+#define __Client_idl__
+
+module client {
+	interface Client;
+};
+
+module client {
+	interface Client {
+	};
+};
+
+#endif

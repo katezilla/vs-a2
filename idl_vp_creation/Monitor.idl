@@ -1,0 +1,28 @@
+#ifndef __Monitor_idl__
+#define __Monitor_idl__
+
+#include "ProzessIds.idl"
+#include "Startzahlen.idl"
+
+module monitor {
+	valuetype ProzessIds;
+	valuetype Startzahlen;
+	interface Monitor;
+};
+
+module monitor {
+	interface Monitor {
+
+		void ring(inout monitor::ProzessIds aProzessIds);
+
+		void startzahlen(inout monitor::Startzahlen aStartzahlen);
+
+		void rechnen(inout U0020string aProzessId, inout U0020string aProzessIdAbsender, inout long long aNum);
+
+		void terminieren(inout U0020string aProzessId, inout U0020string aProzessIdAbsender, inout boolean aTerminiere);
+
+		void ergebnis(inout U0020string aProzessId, inout long long aNum);
+	};
+};
+
+#endif

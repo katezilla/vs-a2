@@ -1,0 +1,13 @@
+#ifndef __Startzahlen_idl__
+#define __Startzahlen_idl__
+
+module monitor {
+	valuetype Startzahlen;
+};
+
+module monitor {
+	valuetype Startzahlen {
+	};
+};
+
+#endif

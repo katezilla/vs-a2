@@ -1,0 +1,23 @@
+#ifndef __Koordinator_idl__
+#define __Koordinator_idl__
+
+module koordinator {
+	interface Koordinator;
+};
+
+module koordinator {
+	interface Koordinator {
+
+		void anmelden(inout long aTypId, inout ::CORBA::WStringValue aProzessId);
+
+		void informieren(inout ::CORBA::WStringValue aProzessId, inout long aSequenzNr, inout boolean aTermStatus, inout long long aLetzteZahl);
+
+		::org::omg::boxedRMI::seq1___CORBA__WStringValue getStarterIds();
+
+		void berechnen(inout ::CORBA::WStringValue aMonitorId, inout long aAnzahlGgtLower, inout long aAnzahlGgtUpper, inout long aDelayZeitLower, inout long aDelayZeitUpper, inout long aTermAbfragePeriode, inout long aGewuenschterGgt);
+
+		void beenden(inout ::CORBA::WStringValue aProzessIdAbsender);
+	};
+};
+
+#endif

@@ -1,0 +1,19 @@
+#ifndef __Starter_idl__
+#define __Starter_idl__
+
+module starter {
+	interface Starter;
+};
+
+module starter {
+	interface Starter {
+
+		void setAnzahlProzesse(inout long aAnzahl);
+
+		void beenden(inout ::CORBA::WStringValue aProzessIdAbsender);
+
+		void beendeProzesse(inout ::CORBA::WStringValue aProzessIdAbsender);
+	};
+};
+
+#endif
