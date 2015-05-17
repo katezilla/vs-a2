@@ -33,7 +33,7 @@ public class ClientImpl extends ClientPOA {
 					nsHost = args[i].split("=")[1];
 				}
 			}
-
+/*
 			Properties props = new Properties();
 			props.put("org.omg.CORBA.ORBInitialPort", nsPort);
 			props.put("org.omg.CORBA.ORBInitialHost", nsHost);
@@ -42,7 +42,7 @@ public class ClientImpl extends ClientPOA {
 			POA rootPoa = POAHelper.narrow(orb
 					.resolve_initial_references("RootPOA"));
 			rootPoa.the_POAManager().activate();
-
+*/
 			NamingContextExt nc = NamingContextExtHelper.narrow(orb
 					.resolve_initial_references("NameService"));
 

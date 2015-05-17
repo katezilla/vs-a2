@@ -1,0 +1,26 @@
+#!/bin/bash
+outfolder=out
+idlj -td $outfolder -f all GgTProcess.idl
+idlj -td $outfolder -f all Koordinator.idl
+idlj -td $outfolder -f all Starter.idl
+idlj -td $outfolder -f all Monitor.idl
+
+cp -R out/ggTProcess/ ../projects/ggTProcess/src/ggTProcess/
+cp -R out/ggTProcess/ ../projects/koordinator/src/ggTProcess/
+cp -R out/ggTProcess/ ../projects/starter/src/ggTProcess/
+cp -R out/ggTProcess/ ../projects/client/src/ggTProcess/
+
+cp -R out/koordinator/ ../projects/ggTProcess/src/koordinator/
+cp -R out/koordinator/ ../projects/koordinator/src/koordinator/
+cp -R out/koordinator/ ../projects/starter/src/koordinator/
+cp -R out/koordinator/ ../projects/client/src/koordinator/
+
+cp -R out/starter/ ../projects/ggTProcess/src/starter/
+cp -R out/starter/ ../projects/koordinator/src/starter/
+cp -R out/starter/ ../projects/starter/src/starter/
+cp -R out/starter/ ../projects/client/src/starter/
+
+cp -R out/monitor/ ../projects/ggTProcess/src/monitor/
+cp -R out/monitor/ ../projects/koordinator/src/monitor/
+cp -R out/monitor/ ../projects/starter/src/monitor/
+cp -R out/monitor/ ../projects/client/src/monitor/
