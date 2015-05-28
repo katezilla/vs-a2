@@ -10,7 +10,6 @@ import monitor.Monitor;
 import monitor.MonitorHelper;
 
 import org.omg.CORBA.ORB;
-import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.CosNaming.NamingContextPackage.CannotProceed;
@@ -33,7 +32,7 @@ public class ClientImpl extends ClientPOA {
 					nsHost = args[i].split("=")[1];
 				}
 			}
-/*
+
 			Properties props = new Properties();
 			props.put("org.omg.CORBA.ORBInitialPort", nsPort);
 			props.put("org.omg.CORBA.ORBInitialHost", nsHost);
@@ -42,7 +41,7 @@ public class ClientImpl extends ClientPOA {
 			POA rootPoa = POAHelper.narrow(orb
 					.resolve_initial_references("RootPOA"));
 			rootPoa.the_POAManager().activate();
-*/
+
 			NamingContextExt nc = NamingContextExtHelper.narrow(orb
 					.resolve_initial_references("NameService"));
 
@@ -100,10 +99,10 @@ public class ClientImpl extends ClientPOA {
 										"Bitte geben sie die maximale Anzahl der ggT-Prozesse ein:"));
 				maxProzesse = (tempIntInput == 0) ? maxProzesse : tempIntInput;
 				tempIntInput = Integer.parseInt(JOptionPane.showInputDialog(
-						null, "Bitte geben sie die minimale Verzögerung ein:"));
+						null, "Bitte geben sie die minimale Verzoegerung ein:"));
 				minDelay = (tempIntInput == 0) ? minDelay : tempIntInput;
 				tempIntInput = Integer.parseInt(JOptionPane.showInputDialog(
-						null, "Bitte geben sie die maximale Verzögerung ein:"));
+						null, "Bitte geben sie die maximale Verzoegerung ein:"));
 				maxDelay = (tempIntInput == 0) ? maxDelay : tempIntInput;
 				tempIntInput = Integer
 						.parseInt(JOptionPane
