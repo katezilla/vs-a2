@@ -5,6 +5,7 @@ import ggTProcess.GgTProcessHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
 import org.omg.CosNaming.NamingContextPackage.CannotProceed;
@@ -31,13 +32,15 @@ public class KoordinatorImpl extends KoordinatorPOA {
     protected boolean shutdownAlgorithm;
     private Semaphore running;
     private Semaphore startTermAlgorithm;
-    private int seqNr;
+    private int currentSeqNr;
+    protected int terminiert;
 
     /**
      * 
      */
     private ArrayList<StarterData> starterList;
     private ArrayList<String> prozessList;
+    private HashMap<String, Boolean> terminierteProzesse;
 
     public KoordinatorImpl(String name) {
         this.name = name;
@@ -46,7 +49,8 @@ public class KoordinatorImpl extends KoordinatorPOA {
         this.algorithmRunning = false;
         running = new Semaphore(0);
         startTermAlgorithm = new Semaphore(0);
-        seqNr = 0;
+        currentSeqNr = 0;
+        terminierteProzesse = new HashMap<String, Boolean>();
     }
 
     @Override
@@ -194,14 +198,41 @@ public class KoordinatorImpl extends KoordinatorPOA {
     }
 
     @Override
-    public void informieren(String prozessId, int sequenzNr,
+    public synchronized void informieren(String prozessId, int sequenzNr,
             boolean termStatus, int letzteZahl) {
-        // TODO Auto-generated method stub
+        // handle only current sequenzNumbers
+        if (currentSeqNr == sequenzNr) {
+            if (terminierteProzesse.containsKey(prozessId)) {
+                terminierteProzesse.replace(prozessId, termStatus);
+            } else { // add the prozess
+                terminierteProzesse.put(prozessId, termStatus);
+            }
+            // check, if all prozesses are terminated
+            if (terminierteProzesse.size() == prozessList.size()) {
+                terminiert = 0;
+                terminierteProzesse
+                        .forEach((string, bool) -> terminiert = (bool) ? terminiert + 1
+                                : terminiert);
+                if (terminiert == prozessList.size()) {
+                    // algorithmus terminated!
+                    algorithmRunning = false;
+                }
+            }
+        } else if (currentSeqNr < sequenzNr) {
+            System.err
+                    .println("higher sequenz number received than current sequenz number!");
+        }
 
     }
 
     @Override
     public String[] getStarterIds() {
+        if (algorithmRunning) {
+            System.out
+                    .println("Algorithm still running - no starter available");
+            String[] result = new String[0];
+            return result;
+        }
         return (String[]) starterList.toArray();
     }
 
@@ -209,6 +240,11 @@ public class KoordinatorImpl extends KoordinatorPOA {
     public void berechnen(String monitorId, int anzahlGgtLower,
             int anzahlGgtUpper, int delayZeitLower, int delayZeitUpper,
             int termAbfragePeriode, int gewuenschterGgt) {
+        if (algorithmRunning) {
+            System.err
+                    .println("calculation ignored - Koordinator still running");
+            return;
+        }
         this.monitorId = monitorId;
         this.delayZeitLower = delayZeitLower;
         this.delayZeitUpper = delayZeitUpper;
@@ -257,6 +293,7 @@ public class KoordinatorImpl extends KoordinatorPOA {
                         startTermAlgorithm.acquire();
                         int prozessIndex;
                         GgTProcess prozess;
+                        boolean algorithmRunning = true;
                         while (algorithmRunning) {
                             // terminierungs algorithm start
                             prozessIndex = (int) (Math.random() * prozessList
@@ -266,12 +303,17 @@ public class KoordinatorImpl extends KoordinatorPOA {
                                         .narrow(KoordinatorMain.nc
                                                 .resolve_str(prozessList
                                                         .get(prozessIndex)));
-                                prozess.markerAuswerten(seqNr, name);
-                                seqNr++;
+                                prozess.markerAuswerten(currentSeqNr, name);
+                                synchronized (KoordinatorImpl.class) {
+                                    currentSeqNr++;
+                                }
                             } catch (NotFound | CannotProceed | InvalidName e) {
                                 e.printStackTrace();
                             }
                             wait(termAbfragePeriode);
+                            synchronized (KoordinatorImpl.class) {
+                                algorithmRunning = KoordinatorImpl.this.algorithmRunning;
+                            }
                         }
                         Starter starter;
                         for (StarterData starterData : starterList) {
