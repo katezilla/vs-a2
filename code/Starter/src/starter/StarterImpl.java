@@ -26,18 +26,15 @@ public class StarterImpl extends StarterPOA {
         m_name = name;
         running = new Semaphore(0);
         prozesse = new ArrayList<String>();
-
     }
 
     public void run(Koordinator koord) {
         koord.anmelden(STARTER_ID, m_name);
         running = new Semaphore(0);
-        while (true) {
-            try {
-                running.acquire();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        try {
+            running.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -64,15 +61,23 @@ public class StarterImpl extends StarterPOA {
 
     @Override
     public void beenden(String prozessIdAbsender) {
+        if (prozessIdAbsender.startsWith("CLIENT")
+                || prozessIdAbsender.startsWith("KOORD")) {
+            System.out
+                    .println("Received regular shutdown command, shutting down processes.");
+        } else {
+            System.out.println("Received irregular shutdown command by "
+                    + prozessIdAbsender + ", shutting down processes.");
+        }
         beendeProzesse("STARTER" + m_name);
+        System.out.println("Processes shut down, shutting down.");
         running.release();
-
     }
 
     @Override
     public void beendeProzesse(String prozessIdAbsender) {
         if (prozessIdAbsender.startsWith("CLIENT")
-                || prozessIdAbsender.startsWith("KOORDINATOR")) {
+                || prozessIdAbsender.startsWith("KOORD")) {
             System.out
                     .println("Received regular shutdown processes command, shutting down processes.");
         } else if (!prozessIdAbsender.startsWith("STARTER")) {
