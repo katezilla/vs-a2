@@ -82,8 +82,14 @@ public class GgTProcessImpl extends GgTProcessPOA {
 
     @Override
     public void rechnen(String prozessIdAbsender, int num) {
-        // TODO Auto-generated method stub
-
+        try {
+            m_jobs.put(new Calculation(prozessIdAbsender, num)); // TODO: more
+                                                                 // information
+                                                                 // of this
+                                                                 // time?
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

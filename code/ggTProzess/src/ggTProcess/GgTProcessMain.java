@@ -6,6 +6,7 @@ import koordinator.Koordinator;
 import koordinator.KoordinatorHelper;
 
 import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.PortableServer.POA;
@@ -55,11 +56,18 @@ public class GgTProcessMain {
 			
 			
 			GgTProcessImpl obj = new GgTProcessImpl(name);
-			obj.run(nc, koord);
+			
+			// register at the naming context
+            org.omg.CORBA.Object ref = rootPoa.servant_to_reference(obj);
+            NameComponent path[] = nc.to_name(name);
+            nc.rebind(path, ref);
 
-			System.out.println("ggT running");
+            System.out.println("ggT running");
+            obj.run(nc, koord);
 
-			Thread.sleep(500);
+            // unregister at the naming context and shut down orb
+            nc.unbind(path);
+            Thread.sleep(500);
 			orb.shutdown(true);
 
 		} catch (Exception e) {

@@ -1,9 +1,6 @@
-package starter;
+package koordinator;
 
 import java.util.Properties;
-
-import koordinator.Koordinator;
-import koordinator.KoordinatorHelper;
 
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NameComponent;
@@ -12,12 +9,11 @@ import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAHelper;
 
-public class StarterMain {
+public class KoordinatorMain {
     public static NamingContextExt nc;
-    public static String starterName = "";
+    public static String name = "";
     public static String nsPort = "20000";
     public static String nsHost = "localhost";
-    public static String koordinator = "";
 
     public static void main(String[] args) {
 
@@ -25,17 +21,12 @@ public class StarterMain {
 
             for (int i = 0; i < args.length; ++i) {
                 if (args[i].contains("--name=")) {
-                    starterName = args[i].split("=")[1];
+                    name = args[i].split("=")[1];
                 } else if (args[i].contains("--nameserverport=")) {
                     nsPort = args[i].split("=")[1];
                 } else if (args[i].contains("--nameserverhost=")) {
                     nsHost = args[i].split("=")[1];
-                } else if (args[i].contains("--koordinator=")) {
-                    koordinator = args[i].split("=")[1];
                 }
-            }
-            if (koordinator.isEmpty()) {
-                return;
             }
 
             Properties props = new Properties();
@@ -50,18 +41,15 @@ public class StarterMain {
             nc = NamingContextExtHelper.narrow(orb
                     .resolve_initial_references("NameService"));
 
-            Koordinator koord = KoordinatorHelper.narrow(nc
-                    .resolve_str(koordinator));
-
-            StarterImpl obj = new StarterImpl(starterName);
+            KoordinatorImpl obj = new KoordinatorImpl(name);
 
             // register at the naming context
             org.omg.CORBA.Object ref = rootPoa.servant_to_reference(obj);
-            NameComponent path[] = nc.to_name(starterName);
+            NameComponent path[] = nc.to_name(name);
             nc.rebind(path, ref);
 
-            System.out.println("Starter running");
-            obj.run(koord);
+            System.out.println("Koordinator running");
+            obj.run();
 
             // unregister at the naming context and shut down orb
             nc.unbind(path);
@@ -71,8 +59,7 @@ public class StarterMain {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        System.out.println("Starter destroyed");
-    }
 
+        System.out.println("Koordinator destroyed");
+    }
 }

@@ -20,117 +20,129 @@ import org.omg.PortableServer.POAHelper;
 
 public class ClientImpl extends ClientPOA {
 
-	public static void main(String[] args) {
-		try {
+    public static void main(String[] args) {
+        try {
 
-			String nsPort = "20000";
-			String nsHost = "localhost";
-			for (int i = 0; i < args.length; ++i) {
-				if (args[i].contains("--nameserverport=")) {
-					nsPort = args[i].split("=")[1];
-				} else if (args[i].contains("--nameserverhost=")) {
-					nsHost = args[i].split("=")[1];
-				}
-			}
+            String nsPort = "20000";
+            String nsHost = "localhost";
+            for (int i = 0; i < args.length; ++i) {
+                if (args[i].contains("--nameserverport=")) {
+                    nsPort = args[i].split("=")[1];
+                } else if (args[i].contains("--nameserverhost=")) {
+                    nsHost = args[i].split("=")[1];
+                }
+            }
 
-			Properties props = new Properties();
-			props.put("org.omg.CORBA.ORBInitialPort", nsPort);
-			props.put("org.omg.CORBA.ORBInitialHost", nsHost);
-			ORB orb = ORB.init(args, props);
+            Properties props = new Properties();
+            props.put("org.omg.CORBA.ORBInitialPort", nsPort);
+            props.put("org.omg.CORBA.ORBInitialHost", nsHost);
+            ORB orb = ORB.init(args, props);
 
-			POA rootPoa = POAHelper.narrow(orb
-					.resolve_initial_references("RootPOA"));
-			rootPoa.the_POAManager().activate();
+            POA rootPoa = POAHelper.narrow(orb
+                    .resolve_initial_references("RootPOA"));
+            rootPoa.the_POAManager().activate();
 
-			NamingContextExt nc = NamingContextExtHelper.narrow(orb
-					.resolve_initial_references("NameService"));
+            NamingContextExt nc = NamingContextExtHelper.narrow(orb
+                    .resolve_initial_references("NameService"));
 
-			run(nc);
+            run(nc);
 
-			System.out.println("Client running");
+            System.out.println("Client running");
 
-			orb.shutdown(true);
-			Thread.sleep(500);
+            orb.shutdown(true);
+            Thread.sleep(500);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		System.out.println("Client destroyed");
-	}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Client destroyed");
+    }
 
-	private static void run(NamingContextExt nc) throws NotFound,
-			CannotProceed, InvalidName {
-		String nameKoordinator = "Koordinator";
-		String nameMonitor = "Monitor";
-		int minProzesse = 0;
-		int maxProzesse = 1;
-		int minDelay = 0;
-		int maxDelay = 1;
-		int termAbfragePeriode = 100;
-		int gewuenschteGGT = 1;
-		Monitor monitor;
-		Koordinator koordinator;
-		boolean running = true;
-		String command;
+    private static void run(NamingContextExt nc) throws NotFound,
+            CannotProceed, InvalidName {
+        String nameKoordinator = "Koordinator";
+        String nameMonitor = "Monitor";
+        int minProzesse = 0;
+        int maxProzesse = 1;
+        int minDelay = 0;
+        int maxDelay = 1;
+        int termAbfragePeriode = 100;
+        int gewuenschteGGT = 1;
+        Monitor monitor;
+        Koordinator koordinator;
+        boolean running = true;
+        String command;
 
-		while (running) {
-			// input request
-			command = JOptionPane.showInputDialog(null,
-					"Bitte geben Sie ein Kommando ein:");
-			switch (command) {
-			case "berechnen":
-				String tempInput = JOptionPane.showInputDialog(null,
-						"Bitte geben Sie Koordinator-namen ein:");
-				nameKoordinator = (tempInput == null) ? nameKoordinator
-						: tempInput;
-				tempInput = null;
-				tempInput = JOptionPane.showInputDialog(null,
-						"Bitte geben Sie Monitor-namen ein:");
-				nameMonitor = (tempInput == null) ? nameMonitor : tempInput;
-				tempInput = null;
-				int tempIntInput = Integer
-						.parseInt(JOptionPane
-								.showInputDialog(null,
-										"Bitte geben sie die minimale Anzahl der ggT-Prozesse ein:"));
-				minProzesse = (tempIntInput == 0) ? minProzesse : tempIntInput;
-				tempIntInput = Integer
-						.parseInt(JOptionPane
-								.showInputDialog(null,
-										"Bitte geben sie die maximale Anzahl der ggT-Prozesse ein:"));
-				maxProzesse = (tempIntInput == 0) ? maxProzesse : tempIntInput;
-				tempIntInput = Integer.parseInt(JOptionPane.showInputDialog(
-						null, "Bitte geben sie die minimale Verzoegerung ein:"));
-				minDelay = (tempIntInput == 0) ? minDelay : tempIntInput;
-				tempIntInput = Integer.parseInt(JOptionPane.showInputDialog(
-						null, "Bitte geben sie die maximale Verzoegerung ein:"));
-				maxDelay = (tempIntInput == 0) ? maxDelay : tempIntInput;
-				tempIntInput = Integer
-						.parseInt(JOptionPane
-								.showInputDialog(null,
-										"Bitte geben sie die Terminierungsabfrageperiode (ms) ein:"));
-				termAbfragePeriode = (tempIntInput == 0) ? termAbfragePeriode
-						: tempIntInput;
-				tempIntInput = Integer.parseInt(JOptionPane.showInputDialog(
-						null, "Bitte geben sie den gewuenschten ggT ein:"));
-				gewuenschteGGT = (tempIntInput == 0) ? gewuenschteGGT
-						: tempIntInput;
+        while (running) {
+            // input request
+            command = JOptionPane.showInputDialog(null,
+                    "Bitte geben Sie ein Kommando ein:");
+            switch (command) {
+            case "berechnen":
+                String tempInput = JOptionPane.showInputDialog(null,
+                        "Bitte geben Sie Koordinator-namen ein:");
+                nameKoordinator = (tempInput == null) ? nameKoordinator
+                        : tempInput;
+                tempInput = null;
+                tempInput = JOptionPane.showInputDialog(null,
+                        "Bitte geben Sie Monitor-namen ein:");
+                nameMonitor = (tempInput == null) ? nameMonitor : tempInput;
+                tempInput = null;
+                int tempIntInput = Integer
+                        .parseInt(JOptionPane
+                                .showInputDialog(null,
+                                        "Bitte geben sie die minimale Anzahl der ggT-Prozesse ein:"));
+                minProzesse = (tempIntInput == 0) ? minProzesse : tempIntInput;
+                tempIntInput = Integer
+                        .parseInt(JOptionPane
+                                .showInputDialog(null,
+                                        "Bitte geben sie die maximale Anzahl der ggT-Prozesse ein:"));
+                maxProzesse = (tempIntInput == 0) ? maxProzesse : tempIntInput;
+                tempIntInput = Integer
+                        .parseInt(JOptionPane
+                                .showInputDialog(null,
+                                        "Bitte geben sie die minimale Verzoegerung ein:"));
+                minDelay = (tempIntInput == 0) ? minDelay : tempIntInput;
+                tempIntInput = Integer
+                        .parseInt(JOptionPane
+                                .showInputDialog(null,
+                                        "Bitte geben sie die maximale Verzoegerung ein:"));
+                maxDelay = (tempIntInput == 0) ? maxDelay : tempIntInput;
+                tempIntInput = Integer
+                        .parseInt(JOptionPane
+                                .showInputDialog(null,
+                                        "Bitte geben sie die Terminierungsabfrageperiode (ms) ein:"));
+                termAbfragePeriode = (tempIntInput == 0) ? termAbfragePeriode
+                        : tempIntInput;
+                tempIntInput = Integer.parseInt(JOptionPane.showInputDialog(
+                        null, "Bitte geben sie den gewuenschten ggT ein:"));
+                gewuenschteGGT = (tempIntInput == 0) ? gewuenschteGGT
+                        : tempIntInput;
 
-				// execute input
-				monitor = MonitorHelper.narrow(nc.resolve_str(nameMonitor));
-				koordinator = KoordinatorHelper.narrow(nc
-						.resolve_str(nameKoordinator));
-				koordinator.berechnen(nameMonitor, minProzesse, maxProzesse,
-						minDelay, maxDelay, termAbfragePeriode, gewuenschteGGT);
-				break;
-			case "beenden":
-				running = false;
-				System.out.println("System wird beendet");
-				break;
-			default:
-				System.err
-						.println("Sorry, ich habe Sie nicht verstanden, bitte geben Sie eines der Kommandos ein: berechnen, beenden");
-			}
-		}
-	}
+                // execute input
+                monitor = MonitorHelper.narrow(nc.resolve_str(nameMonitor));
+                koordinator = KoordinatorHelper.narrow(nc
+                        .resolve_str(nameKoordinator));
+
+                if (koordinator.getStarterIds().length > 0) {
+                    koordinator.berechnen(nameMonitor, minProzesse,
+                            maxProzesse, minDelay, maxDelay,
+                            termAbfragePeriode, gewuenschteGGT);
+                } else { // no starter registered at koordinator, therefore
+                         // can't execute
+                    System.err
+                            .println("Kann nicht berechnet werden, der Koordinator kennt keinen Starter!");
+                }
+                break;
+            case "beenden":
+                running = false;
+                System.out.println("System wird beendet");
+                break;
+            default:
+                System.err
+                        .println("Sorry, ich habe Sie nicht verstanden, bitte geben Sie eines der Kommandos ein: berechnen, beenden");
+            }
+        }
+    }
 
 }
