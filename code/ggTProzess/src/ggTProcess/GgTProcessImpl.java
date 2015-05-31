@@ -20,11 +20,14 @@ public class GgTProcessImpl extends GgTProcessPOA {
     private int calcZahl;
     private int delayZeit;
     private GgTProcess links;
+    private String linksName;
     private GgTProcess rechts;
+    private String rechtsName;
     private Monitor monitor;
     private Semaphore running;
 
     private Thread m_thread;
+    protected Koordinator koordinator;
 
     GgTProcessImpl(final String name) {
         m_name = name;
@@ -34,17 +37,54 @@ public class GgTProcessImpl extends GgTProcessPOA {
         m_thread = new Thread(new Runnable() {
             @Override
             public void run() {
+                boolean markerVonRechts = false;
+                boolean markerVonLinks = false;
+                boolean merkerTerminiere = false;
+                int seqNr = -1;
+                int alteSeqNr = -1;
+                String absender;
                 while (true) {
                     try {
                         running.acquire();
                         IJob job = m_jobs.take();
                         if (job instanceof Marker) {
-                            // TODO marker an nachbarn senden
+                            Marker markJob = (Marker) job;
+                            seqNr = markJob.getSeqNr();
+                            absender = markJob.getProzessIdAbsender();
+                            if (seqNr > alteSeqNr) {
+                                markerVonRechts = false;
+                                markerVonLinks = false;
+                                merkerTerminiere = true;
+                                alteSeqNr = markJob.getSeqNr();
+                                links.markerAuswerten(seqNr, absender);
+                                rechts.markerAuswerten(seqNr, absender);
+                            }
+                            if (absender == linksName) {
+                                markerVonLinks = true;
+                            }
+                            if (absender == rechtsName) {
+                                markerVonRechts = true;
+                            }
+                            if (markerVonLinks && markerVonRechts) {
+                                koordinator.informieren(m_name, alteSeqNr,
+                                        merkerTerminiere, calcZahl);
+                            }
+                            monitor.terminieren(m_name, absender,
+                                    merkerTerminiere);
                         } else {
-                            // TODO rechnen
+                            Calculation calcJob = (Calculation) job;
+                            wait(delayZeit); // simulate advanced calculation
+                            int newcalcZahl = calc(calcJob.getNum());
+                            if (newcalcZahl != -1) {
+                                links.rechnen(m_name, newcalcZahl);
+                                rechts.rechnen(m_name, newcalcZahl);
+                                merkerTerminiere = false;
+                            }
+                            monitor.rechnen(m_name,
+                                    calcJob.getProzessIdAbsender(),
+                                    calcJob.getNum());
                         }
                     } catch (InterruptedException e) {
-
                         e.printStackTrace();
                     }
                 }
@@ -53,7 +93,17 @@ public class GgTProcessImpl extends GgTProcessPOA {
         m_thread.start();
     }
 
+    protected synchronized int calc(int num) {
+        if (num < calcZahl) {
+            calcZahl = ((calcZahl - 1) % num) + 1;
+            return calcZahl;
+        } else {
+            return -1;
+        }
+    }
+
     public void run(NamingContextExt nc, Koordinator koordinator) {
+        this.koordinator = koordinator;
         koordinator.anmelden(PROZESS_ID, m_name);
         try {
             running.acquire();
@@ -69,8 +119,10 @@ public class GgTProcessImpl extends GgTProcessPOA {
         calcZahl = startwertMi;
         this.delayZeit = delayZeit;
         try {
+            linksName = linkeProzessId;
             links = GgTProcessHelper.narrow(GgTProcessMain.nc
                     .resolve_str(linkeProzessId));
+            rechtsName = rechteProzessId;
             rechts = GgTProcessHelper.narrow(GgTProcessMain.nc
                     .resolve_str(rechteProzessId));
             monitor = MonitorHelper.narrow(GgTProcessMain.nc
@@ -94,8 +146,14 @@ public class GgTProcessImpl extends GgTProcessPOA {
 
     @Override
     public void markerAuswerten(int seqNr, String prozessIdAbsender) {
-        // TODO Auto-generated method stub
-
+        try {
+            m_jobs.put(new Marker(prozessIdAbsender, seqNr)); // TODO: more
+                                                              // information
+                                                              // of this
+                                                              // time?
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
