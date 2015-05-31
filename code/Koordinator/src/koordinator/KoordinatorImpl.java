@@ -4,7 +4,8 @@ import ggTProcess.GgTProcess;
 import ggTProcess.GgTProcessHelper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.concurrent.Semaphore;
 
 import org.omg.CosNaming.NamingContextPackage.CannotProceed;
 import org.omg.CosNaming.NamingContextPackage.InvalidName;
@@ -27,6 +28,10 @@ public class KoordinatorImpl extends KoordinatorPOA {
     private int termAbfragePeriode;
     private int gewuenschterGgt;
     private boolean algorithmRunning;
+    protected boolean shutdownAlgorithm;
+    private Semaphore running;
+    private Semaphore startTermAlgorithm;
+    private int seqNr;
 
     /**
      * 
@@ -39,6 +44,9 @@ public class KoordinatorImpl extends KoordinatorPOA {
         this.starterList = new ArrayList<StarterData>();
         this.prozessList = new ArrayList<String>();
         this.algorithmRunning = false;
+        running = new Semaphore(0);
+        startTermAlgorithm = new Semaphore(0);
+        seqNr = 0;
     }
 
     @Override
@@ -66,7 +74,7 @@ public class KoordinatorImpl extends KoordinatorPOA {
                 prozessList.add(prozessId);
                 // add prozess to bridge between starter and prozess (1:n)
                 starterList.get(starterPos).put(prozessId);
-                setProzessStartwerte();
+                startProzesse();
             }
         } else {
             System.err.println("Invalid process ID"); // TODO: error handling
@@ -74,7 +82,7 @@ public class KoordinatorImpl extends KoordinatorPOA {
         // TODO: other functionality?
     }
 
-    private void setProzessStartwerte() {
+    private void startProzesse() {
         for (StarterData starter : starterList) {
             if (starter.getSize() != starter.getAnzahlProzesse()) {
                 // TODO: timeout for if not all anz processes registered
@@ -83,8 +91,8 @@ public class KoordinatorImpl extends KoordinatorPOA {
         }
         // if this is being executed, all prozesses of all starters have
         // registered --> start algorithm
-        algorithmRunning = true;
-        ArrayList<Integer> prozessStartWertList = new ArrayList<Integer>();
+        Collections.shuffle(prozessList); // randomize order of the prozesses
+
         GgTProcess process;
         String prozessId;
         String linkeId;
@@ -108,12 +116,15 @@ public class KoordinatorImpl extends KoordinatorPOA {
             } catch (NotFound | CannotProceed | InvalidName e) {
                 e.printStackTrace();
             }
-            startzahlen[i] = prozessStartWertList.get(i);
+            startzahlen[i] = startwertMi;
         }
         // inform monitor
         monitor.ring((String[]) prozessList.toArray());
         monitor.startzahlen(startzahlen);
+
         startThreeLowestProcesses(startzahlen);
+        algorithmRunning = true;
+        startTermAlgorithm.release();
     }
 
     private void startThreeLowestProcesses(int[] startzahlen) {
@@ -177,7 +188,6 @@ public class KoordinatorImpl extends KoordinatorPOA {
                 e.printStackTrace();
             }
         } else {
-            algorithmRunning = false;
             System.err.println("Algorithm didn't start - no lowest indices.");
             // TODO: error handling
         }
@@ -224,13 +234,76 @@ public class KoordinatorImpl extends KoordinatorPOA {
 
     @Override
     public void beenden(String prozessIdAbsender) {
-        // TODO Auto-generated method stub
-
+        Starter starter;
+        for (StarterData starterData : starterList) {
+            try {
+                starter = StarterHelper.narrow(KoordinatorMain.nc
+                        .resolve_str(starterData.getName()));
+                starter.beenden(name);
+            } catch (NotFound | CannotProceed | InvalidName e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void run() {
-        // TODO Auto-generated method stub
+        shutdownAlgorithm = false;
+        Thread termAlgorithm = new Thread(new Runnable() {
 
+            @Override
+            public void run() {
+                while (!shutdownAlgorithm) {
+                    try {
+                        startTermAlgorithm.acquire();
+                        int prozessIndex;
+                        GgTProcess prozess;
+                        while (algorithmRunning) {
+                            // terminierungs algorithm start
+                            prozessIndex = (int) (Math.random() * prozessList
+                                    .size());
+                            try {
+                                prozess = GgTProcessHelper
+                                        .narrow(KoordinatorMain.nc
+                                                .resolve_str(prozessList
+                                                        .get(prozessIndex)));
+                                prozess.markerAuswerten(seqNr, name);
+                                seqNr++;
+                            } catch (NotFound | CannotProceed | InvalidName e) {
+                                e.printStackTrace();
+                            }
+                            wait(termAbfragePeriode);
+                        }
+                        Starter starter;
+                        for (StarterData starterData : starterList) {
+                            try {
+                                starter = StarterHelper
+                                        .narrow(KoordinatorMain.nc
+                                                .resolve_str(starterData
+                                                        .getName()));
+                                starter.beendeProzesse(name);
+                            } catch (NotFound | CannotProceed | InvalidName e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        try {
+            termAlgorithm.start();
+            running.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        shutdownAlgorithm = true;
+        try {
+            termAlgorithm.join();
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
+        }
     }
 
     /**
