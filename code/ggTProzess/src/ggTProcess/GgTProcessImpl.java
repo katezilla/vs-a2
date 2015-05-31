@@ -25,14 +25,18 @@ public class GgTProcessImpl extends GgTProcessPOA {
     private String rechtsName;
     private Monitor monitor;
     private Semaphore running;
+    private Semaphore newJob;
 
     private Thread m_thread;
     protected Koordinator koordinator;
+    protected boolean runningBool;
 
     GgTProcessImpl(final String name) {
         m_name = name;
         m_jobs = new SynchronousQueue<IJob>();
         running = new Semaphore(0);
+        runningBool = true;
+        newJob = new Semaphore(0);
 
         m_thread = new Thread(new Runnable() {
             @Override
@@ -43,9 +47,9 @@ public class GgTProcessImpl extends GgTProcessPOA {
                 int seqNr = -1;
                 int alteSeqNr = -1;
                 String absender;
-                while (true) {
+                while (runningBool) {
                     try {
-                        running.acquire();
+                        newJob.acquire();
                         IJob job = m_jobs.take();
                         if (job instanceof Marker) {
                             Marker markJob = (Marker) job;
@@ -114,8 +118,9 @@ public class GgTProcessImpl extends GgTProcessPOA {
     }
 
     @Override
-    public void setStartwerte(String linkeProzessId, String rechteProzessId,
-            int startwertMi, int delayZeit, String monitorId) {
+    public synchronized void setStartwerte(String linkeProzessId,
+            String rechteProzessId, int startwertMi, int delayZeit,
+            String monitorId) {
         calcZahl = startwertMi;
         this.delayZeit = delayZeit;
         try {
@@ -139,6 +144,7 @@ public class GgTProcessImpl extends GgTProcessPOA {
                                                                  // information
                                                                  // of this
                                                                  // time?
+            newJob.release();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -151,6 +157,7 @@ public class GgTProcessImpl extends GgTProcessPOA {
                                                               // information
                                                               // of this
                                                               // time?
+            newJob.release();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -165,6 +172,13 @@ public class GgTProcessImpl extends GgTProcessPOA {
             System.out
                     .println("Received irregular shutdown processes command by "
                             + prozessIdAbsender + ", shutting down.");
+        }
+        runningBool = false;
+        newJob.release();
+        try {
+            m_thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         running.release();
     }
