@@ -68,7 +68,7 @@ public class ClientImpl extends ClientPOA {
         int maxDelay = 1;
         int termAbfragePeriode = 100;
         int gewuenschteGGT = 1;
-        Monitor monitor;
+        Monitor monitor; // TODO: decide reason..
         Koordinator koordinator;
         boolean running = true;
         String command;
