@@ -53,7 +53,7 @@ public class KoordinatorMain {
 
             // unregister at the naming context and shut down orb
             nc.unbind(path);
-            Thread.sleep(500);
+            Thread.sleep(1000);
             orb.shutdown(true);
 
         } catch (Exception e) {

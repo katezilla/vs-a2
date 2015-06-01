@@ -9,6 +9,7 @@ public class StarterData {
 
     public StarterData(String name) {
         this.name = name;
+        processList = new ArrayList<String>();
     }
 
     public String getName() {
@@ -33,5 +34,9 @@ public class StarterData {
 
     public void setAnzahlProzesse(int anzahlProzesse) {
         this.anzahlProzesse = anzahlProzesse;
+    }
+
+    public void clear() {
+        processList.clear();
     }
 }

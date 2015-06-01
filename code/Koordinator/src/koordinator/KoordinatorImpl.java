@@ -28,12 +28,13 @@ public class KoordinatorImpl extends KoordinatorPOA {
     private int delayZeitUpper;
     private int termAbfragePeriode;
     private int gewuenschterGgt;
-    private boolean algorithmRunning;
-    protected boolean shutdownAlgorithm;
+    protected static boolean algorithmRunning;
+    protected static boolean shutdownAlgorithm;
     private Semaphore running;
     private Semaphore startTermAlgorithm;
     private int currentSeqNr;
     protected int terminiert;
+    protected int ergebnis;
 
     /**
      * 
@@ -46,7 +47,7 @@ public class KoordinatorImpl extends KoordinatorPOA {
         this.name = name;
         this.starterList = new ArrayList<StarterData>();
         this.prozessList = new ArrayList<String>();
-        this.algorithmRunning = false;
+        KoordinatorImpl.algorithmRunning = false;
         running = new Semaphore(0);
         startTermAlgorithm = new Semaphore(0);
         currentSeqNr = 0;
@@ -73,7 +74,6 @@ public class KoordinatorImpl extends KoordinatorPOA {
             if (starterPos < 0) {
                 System.err
                         .println("Invalid process ID beginning or no starter registered");
-                // TODO: error handling
             } else {
                 prozessList.add(prozessId);
                 // add prozess to bridge between starter and prozess (1:n)
@@ -81,18 +81,19 @@ public class KoordinatorImpl extends KoordinatorPOA {
                 startProzesse();
             }
         } else {
-            System.err.println("Invalid process ID"); // TODO: error handling
+            System.err.println("Invalid process ID");
         }
-        // TODO: other functionality?
     }
 
     private void startProzesse() {
         for (StarterData starter : starterList) {
             if (starter.getSize() != starter.getAnzahlProzesse()) {
                 // TODO: timeout for if not all anz processes registered
+                System.out.println("not all processes registered yet");
                 return;
             }
         }
+        System.out.println("all processes registered");
         // if this is being executed, all prozesses of all starters have
         // registered --> start algorithm
         Collections.shuffle(prozessList); // randomize order of the prozesses
@@ -117,18 +118,26 @@ public class KoordinatorImpl extends KoordinatorPOA {
                         .resolve_str(prozessId));
                 process.setStartwerte(linkeId, rechteId, startwertMi,
                         delayZeit, monitorId);
+                System.out.println("setStartWerte for " + prozessId + " with "
+                        + linkeId + "," + rechteId);
             } catch (NotFound | CannotProceed | InvalidName e) {
                 e.printStackTrace();
             }
             startzahlen[i] = startwertMi;
         }
         // inform monitor
-        monitor.ring((String[]) prozessList.toArray());
+        String[] ring = new String[prozessList.size()];
+        for (int i = 0; i < prozessList.size(); i++) {
+            ring[i] = prozessList.get(i);
+        }
+        monitor.ring(ring);
         monitor.startzahlen(startzahlen);
 
         startThreeLowestProcesses(startzahlen);
+        System.out.println("algorithm started");
         algorithmRunning = true;
-        startTermAlgorithm.release();
+        startTermAlgorithm.release(2); // 2, since there is a check before and
+                                       // after the bool for shut down
     }
 
     private void startThreeLowestProcesses(int[] startzahlen) {
@@ -160,15 +169,20 @@ public class KoordinatorImpl extends KoordinatorPOA {
         }
         if (indexLowest3 != -1) { // start all three processes
             try {
+                System.out.println("starting processes' algorithm");
                 process = GgTProcessHelper.narrow(KoordinatorMain.nc
                         .resolve_str(prozessList.get(indexLowest3)));
+                System.out.println("received process corba object");
                 process.rechnen(name, lowest3);
+                System.out.println("process "+prozessList.get(indexLowest3)+" started");
                 process = GgTProcessHelper.narrow(KoordinatorMain.nc
                         .resolve_str(prozessList.get(indexLowest2)));
                 process.rechnen(name, lowest2);
+                System.out.println("process "+prozessList.get(indexLowest2)+" started");
                 process = GgTProcessHelper.narrow(KoordinatorMain.nc
                         .resolve_str(prozessList.get(indexLowest1)));
                 process.rechnen(name, lowest1);
+                System.out.println("process "+prozessList.get(indexLowest1)+" started");
             } catch (NotFound | CannotProceed | InvalidName e) {
                 e.printStackTrace();
             }
@@ -193,7 +207,6 @@ public class KoordinatorImpl extends KoordinatorPOA {
             }
         } else {
             System.err.println("Algorithm didn't start - no lowest indices.");
-            // TODO: error handling
         }
     }
 
@@ -202,6 +215,8 @@ public class KoordinatorImpl extends KoordinatorPOA {
             boolean termStatus, int letzteZahl) {
         // handle only current sequenzNumbers
         if (currentSeqNr == sequenzNr) {
+            System.out.println("got new info from: " + prozessId + "," + sequenzNr
+                    + "," + termStatus + "," + letzteZahl);
             if (terminierteProzesse.containsKey(prozessId)) {
                 terminierteProzesse.remove(prozessId);
                 terminierteProzesse.put(prozessId, termStatus);
@@ -212,13 +227,17 @@ public class KoordinatorImpl extends KoordinatorPOA {
             if (terminierteProzesse.size() == prozessList.size()) {
                 terminiert = 0;
                 for (String key : terminierteProzesse.keySet()) {
-                	if (terminierteProzesse.get(key)) {
-                		terminiert += 1;
-                	}
+                    if (terminierteProzesse.get(key)) {
+                        terminiert += 1;
+                    }
                 }
                 if (terminiert == prozessList.size()) {
                     // algorithmus terminated!
+                    ergebnis = letzteZahl;
                     algorithmRunning = false;
+                    System.out.println("Calculation terminated. Result: "
+                            + ergebnis);
+                    terminierteProzesse.clear();
                 }
             }
         } else if (currentSeqNr < sequenzNr) {
@@ -230,16 +249,15 @@ public class KoordinatorImpl extends KoordinatorPOA {
 
     @Override
     public String[] getStarterIds() {
-        /*if (algorithmRunning) {
-            System.out
-                    .println("Algorithm still running - no starter available");
-            String[] result = new String[0];
-            return result;
-        }*/
+        /*
+         * if (algorithmRunning) { System.out
+         * .println("Algorithm still running - no starter available"); String[]
+         * result = new String[0]; return result; }
+         */
         String ret[] = new String[starterList.size()];
         int idx = 0;
         for (StarterData s : starterList) {
-        	ret[idx] = s.getName();
+            ret[idx] = s.getName();
         }
         return ret;
     }
@@ -288,7 +306,8 @@ public class KoordinatorImpl extends KoordinatorPOA {
                 e.printStackTrace();
             }
         }
-        //TODO: beenden self
+        System.out.println("Starter shut down, shutting down.");
+        running.release();
     }
 
     public void run() {
@@ -297,12 +316,18 @@ public class KoordinatorImpl extends KoordinatorPOA {
 
             @Override
             public void run() {
+                try {
+                    startTermAlgorithm.acquire();
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+                ArrayList<StarterData> removeFromProcesses = new ArrayList<StarterData>();
                 while (!shutdownAlgorithm) {
                     try {
                         startTermAlgorithm.acquire();
                         int prozessIndex;
                         GgTProcess prozess;
-                        boolean algorithmRunning = true;
+                        boolean algorithmRunning = KoordinatorImpl.algorithmRunning;
                         while (algorithmRunning) {
                             // terminierungs algorithm start
                             prozessIndex = (int) (Math.random() * prozessList
@@ -312,19 +337,29 @@ public class KoordinatorImpl extends KoordinatorPOA {
                                         .narrow(KoordinatorMain.nc
                                                 .resolve_str(prozessList
                                                         .get(prozessIndex)));
-                                prozess.markerAuswerten(currentSeqNr, name);
                                 synchronized (KoordinatorImpl.class) {
                                     currentSeqNr++;
                                 }
+                                prozess.markerAuswerten(currentSeqNr, name);
+                                System.out.println("sent marker: "
+                                        + prozessList.get(prozessIndex)
+                                        + currentSeqNr);
                             } catch (NotFound | CannotProceed | InvalidName e) {
                                 e.printStackTrace();
                             }
-                            wait(termAbfragePeriode);
-                            synchronized (KoordinatorImpl.class) {
-                                algorithmRunning = KoordinatorImpl.this.algorithmRunning;
+                            synchronized (this) {
+                                wait(KoordinatorImpl.this.termAbfragePeriode);
+                            }
+                            synchronized (KoordinatorImpl.this) {
+                                algorithmRunning = KoordinatorImpl.algorithmRunning;
                             }
                         }
+                        // algorithm terminated
+                        if (monitor != null) {
+                            monitor.ergebnis(name, ergebnis);
+                        }
                         Starter starter;
+
                         for (StarterData starterData : starterList) {
                             try {
                                 starter = StarterHelper
@@ -332,10 +367,19 @@ public class KoordinatorImpl extends KoordinatorPOA {
                                                 .resolve_str(starterData
                                                         .getName()));
                                 starter.beendeProzesse(name);
+                                starterData.clear();
+                                starterData.setAnzahlProzesse(0);
                             } catch (NotFound | CannotProceed | InvalidName e) {
-                                e.printStackTrace();
+                                System.out.println("Starter "
+                                        + starterData.getName()
+                                        + " not accessible, removing from list.");
+                                removeFromProcesses.add(starterData);
                             }
                         }
+                        for (StarterData starterData : removeFromProcesses) {
+                            starterList.remove(starterData);
+                        }
+                        prozessList.clear();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -349,7 +393,12 @@ public class KoordinatorImpl extends KoordinatorPOA {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        shutdownAlgorithm = true;
+        System.out.println("running acquired");
+        synchronized (this) {
+            shutdownAlgorithm = true;
+            algorithmRunning = false;
+        }
+        startTermAlgorithm.release(2);
         try {
             termAlgorithm.join();
         } catch (InterruptedException e) {

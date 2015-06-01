@@ -1,7 +1,8 @@
 package ggTProcess;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.SynchronousQueue;
 
 import koordinator.Koordinator;
 import monitor.Monitor;
@@ -16,7 +17,7 @@ public class GgTProcessImpl extends GgTProcessPOA {
 
     private static int PROZESS_ID = 1;
     private String m_name;
-    private SynchronousQueue<IJob> m_jobs;
+    private Queue<IJob> m_jobs;
     private int calcZahl;
     private int delayZeit;
     private GgTProcess links;
@@ -29,14 +30,16 @@ public class GgTProcessImpl extends GgTProcessPOA {
 
     private Thread m_thread;
     protected Koordinator koordinator;
-    protected boolean runningBool;
+    protected volatile boolean runningBool;
+    protected String koordinatorName;
 
-    GgTProcessImpl(final String name) {
+    GgTProcessImpl(final String name, String koordinatorName) {
         m_name = name;
-        m_jobs = new SynchronousQueue<IJob>();
+        this.koordinatorName = koordinatorName;
+        m_jobs = new LinkedList<IJob>();
         running = new Semaphore(0);
         runningBool = true;
-        newJob = new Semaphore(0);
+        newJob = new Semaphore(0, true);
 
         m_thread = new Thread(new Runnable() {
             @Override
@@ -47,10 +50,23 @@ public class GgTProcessImpl extends GgTProcessPOA {
                 int seqNr = -1;
                 int alteSeqNr = -1;
                 String absender;
+                int tries = 0;
+                IJob job;
                 while (runningBool) {
                     try {
                         newJob.acquire();
-                        IJob job = m_jobs.take();
+                        tries = 0;
+                        do {
+                            job = m_jobs.poll();
+                            if (tries > 0) {
+                                System.out.println("received null job");
+                                synchronized (this) {
+                                    wait(10);
+                                }
+                            }
+                            tries++;
+                        } while (job == null && tries <= 10 && runningBool);
+
                         if (job instanceof Marker) {
                             Marker markJob = (Marker) job;
                             seqNr = markJob.getSeqNr();
@@ -59,14 +75,14 @@ public class GgTProcessImpl extends GgTProcessPOA {
                                 markerVonRechts = false;
                                 markerVonLinks = false;
                                 merkerTerminiere = true;
-                                alteSeqNr = markJob.getSeqNr();
-                                links.markerAuswerten(seqNr, absender);
-                                rechts.markerAuswerten(seqNr, absender);
+                                alteSeqNr = seqNr;
+                                links.markerAuswerten(seqNr, m_name);
+                                rechts.markerAuswerten(seqNr, m_name);
                             }
-                            if (absender == linksName) {
+                            if (absender.equals(linksName)) {
                                 markerVonLinks = true;
                             }
-                            if (absender == rechtsName) {
+                            if (absender.equals(rechtsName)) {
                                 markerVonRechts = true;
                             }
                             if (markerVonLinks && markerVonRechts) {
@@ -75,13 +91,21 @@ public class GgTProcessImpl extends GgTProcessPOA {
                             }
                             monitor.terminieren(m_name, absender,
                                     merkerTerminiere);
-                        } else {
+                        } else if (job instanceof Calculation) {
                             Calculation calcJob = (Calculation) job;
-                            wait(delayZeit); // simulate advanced calculation
+                            System.out.println("job: " + calcJob.getNum() + ","
+                                    + calcJob.getProzessIdAbsender() + ",seq"
+                                    + seqNr);
+                            synchronized (this) {
+                                wait(delayZeit); // simulate advanced
+                                                 // calculation
+                            }
                             int newcalcZahl = calc(calcJob.getNum());
-                            if (newcalcZahl != -1) {
-                                links.rechnen(m_name, newcalcZahl);
-                                rechts.rechnen(m_name, newcalcZahl);
+                            if (newcalcZahl != -1
+                                    || calcJob.getProzessIdAbsender().equals(
+                                            koordinatorName)) {
+                                links.rechnen(m_name, calcZahl);
+                                rechts.rechnen(m_name, calcZahl);
                                 merkerTerminiere = false;
                             }
                             monitor.rechnen(m_name,
@@ -139,28 +163,14 @@ public class GgTProcessImpl extends GgTProcessPOA {
 
     @Override
     public void rechnen(String prozessIdAbsender, int num) {
-        try {
-            m_jobs.put(new Calculation(prozessIdAbsender, num)); // TODO: more
-                                                                 // information
-                                                                 // of this
-                                                                 // time?
-            newJob.release();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        m_jobs.add(new Calculation(prozessIdAbsender, num));
+        newJob.release();
     }
 
     @Override
     public void markerAuswerten(int seqNr, String prozessIdAbsender) {
-        try {
-            m_jobs.put(new Marker(prozessIdAbsender, seqNr)); // TODO: more
-                                                              // information
-                                                              // of this
-                                                              // time?
-            newJob.release();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        m_jobs.add(new Marker(prozessIdAbsender, seqNr));
+        newJob.release();
     }
 
     @Override

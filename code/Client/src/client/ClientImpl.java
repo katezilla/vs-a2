@@ -49,8 +49,8 @@ public class ClientImpl extends ClientPOA {
 
             System.out.println("Client running");
 
+            Thread.sleep(1000);
             orb.shutdown(true);
-            Thread.sleep(500);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,13 +60,13 @@ public class ClientImpl extends ClientPOA {
 
     private static void run(NamingContextExt nc) throws NotFound,
             CannotProceed, InvalidName {
-        String nameKoordinator = "Koordinator";
-        String nameMonitor = "Monitor";
-        int minProzesse = 0;
-        int maxProzesse = 1;
-        int minDelay = 0;
-        int maxDelay = 1;
-        int termAbfragePeriode = 100;
+        String nameKoordinator = "KOORD_jk";
+        String nameMonitor = "MONITOR";
+        int minProzesse = 3;
+        int maxProzesse = 5;
+        int minDelay = 10;
+        int maxDelay = 15;
+        int termAbfragePeriode = 2000;
         int gewuenschteGGT = 1;
         Monitor monitor; // TODO: decide reason..
         Koordinator koordinator;
@@ -81,46 +81,70 @@ public class ClientImpl extends ClientPOA {
             case "berechnen":
                 String tempInput = JOptionPane.showInputDialog(null,
                         "Bitte geben Sie Koordinator-namen ein:");
-                nameKoordinator = (tempInput == null) ? nameKoordinator
+                nameKoordinator = (tempInput.startsWith("d")) ? nameKoordinator
                         : tempInput;
                 tempInput = null;
                 tempInput = JOptionPane.showInputDialog(null,
                         "Bitte geben Sie Monitor-namen ein:");
-                nameMonitor = (tempInput == null) ? nameMonitor : tempInput;
+                nameMonitor = (tempInput.startsWith("d")) ? nameMonitor : tempInput;
                 tempInput = null;
-                int tempIntInput = Integer
-                        .parseInt(JOptionPane
-                                .showInputDialog(null,
-                                        "Bitte geben sie die minimale Anzahl der ggT-Prozesse ein:"));
+                int tempIntInput = 0;
+                try {
+                    tempIntInput = Integer
+                            .parseInt(JOptionPane
+                                    .showInputDialog(null,
+                                            "Bitte geben sie die minimale Anzahl der ggT-Prozesse ein:"));
+                } catch (NumberFormatException e) {
+                }
                 minProzesse = (tempIntInput == 0) ? minProzesse : tempIntInput;
-                tempIntInput = Integer
-                        .parseInt(JOptionPane
-                                .showInputDialog(null,
-                                        "Bitte geben sie die maximale Anzahl der ggT-Prozesse ein:"));
+                try {
+                    tempIntInput = Integer
+                            .parseInt(JOptionPane
+                                    .showInputDialog(null,
+                                            "Bitte geben sie die maximale Anzahl der ggT-Prozesse ein:"));
+                } catch (NumberFormatException e) {
+                }
                 maxProzesse = (tempIntInput == 0) ? maxProzesse : tempIntInput;
-                tempIntInput = Integer
-                        .parseInt(JOptionPane
-                                .showInputDialog(null,
-                                        "Bitte geben sie die minimale Verzoegerung ein:"));
+                try {
+                    tempIntInput = Integer
+                            .parseInt(JOptionPane
+                                    .showInputDialog(null,
+                                            "Bitte geben sie die minimale Verzoegerung ein:"));
+                } catch (NumberFormatException e) {
+                }
                 minDelay = (tempIntInput == 0) ? minDelay : tempIntInput;
-                tempIntInput = Integer
-                        .parseInt(JOptionPane
-                                .showInputDialog(null,
-                                        "Bitte geben sie die maximale Verzoegerung ein:"));
+                try {
+                    tempIntInput = Integer
+                            .parseInt(JOptionPane
+                                    .showInputDialog(null,
+                                            "Bitte geben sie die maximale Verzoegerung ein:"));
+                } catch (NumberFormatException e) {
+                }
                 maxDelay = (tempIntInput == 0) ? maxDelay : tempIntInput;
-                tempIntInput = Integer
-                        .parseInt(JOptionPane
-                                .showInputDialog(null,
-                                        "Bitte geben sie die Terminierungsabfrageperiode (ms) ein:"));
+                try {
+                    tempIntInput = Integer
+                            .parseInt(JOptionPane
+                                    .showInputDialog(null,
+                                            "Bitte geben sie die Terminierungsabfrageperiode (ms) ein:"));
+                } catch (NumberFormatException e) {
+                }
                 termAbfragePeriode = (tempIntInput == 0) ? termAbfragePeriode
                         : tempIntInput;
-                tempIntInput = Integer.parseInt(JOptionPane.showInputDialog(
-                        null, "Bitte geben sie den gewuenschten ggT ein:"));
+                try {
+                    tempIntInput = Integer
+                            .parseInt(JOptionPane
+                                    .showInputDialog(null,
+                                            "Bitte geben sie den gewuenschten ggT ein:"));
+                } catch (NumberFormatException e) {
+                }
                 gewuenschteGGT = (tempIntInput == 0) ? gewuenschteGGT
                         : tempIntInput;
 
                 // execute input
+                System.out.println("Verbinde mit Monitor: " + nameMonitor);
                 monitor = MonitorHelper.narrow(nc.resolve_str(nameMonitor));
+                System.out.println("Verbinde mit Koordinator: "
+                        + nameKoordinator);
                 koordinator = KoordinatorHelper.narrow(nc
                         .resolve_str(nameKoordinator));
 

@@ -16,7 +16,7 @@ public class GgTProcessMain {
 	public static NamingContextExt nc;
 
 	public static void main(String[] args) {
-		
+		System.out.println("starting");
 		try {
 			String name = "";
 			String nsPort = "20000";
@@ -51,11 +51,7 @@ public class GgTProcessMain {
 			
 			Koordinator koord = KoordinatorHelper.narrow(nc.resolve_str(koordinator));
 			
-			//String our_name = "ggT:" + java.net.InetAddress.getLocalHost().getCanonicalHostName() 
-			//         + ":" + ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-			
-			
-			GgTProcessImpl obj = new GgTProcessImpl(name);
+			GgTProcessImpl obj = new GgTProcessImpl(name,koordinator);
 			
 			// register at the naming context
             org.omg.CORBA.Object ref = rootPoa.servant_to_reference(obj);

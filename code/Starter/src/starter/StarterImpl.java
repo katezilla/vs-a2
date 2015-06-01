@@ -19,11 +19,14 @@ public class StarterImpl extends StarterPOA {
     private static int STARTER_ID = 0;
     public String m_name;
     private Semaphore running;
-    //private final String command = "java ./../ggTProzess/bin/GgTProcessMain";
-    private final String cp_absolut = "D:/gitrepos/vs-a2/code/ggTProzess/bin";
-    private final String command = "java -cp " + cp_absolut + " ggTProcess.GgTProcessMain";
-    private String orb = " -ORBInitialHost localhost -ORBInitialPort 2000";
+    // absolute path to directory!
+    private final String cp_absolut = "D:/Programming/haw/15_ss/vsp2/code/ggTProzess/bin";
+    private final String command = "java -cp " + cp_absolut
+            + " ggTProcess.GgTProcessMain";
+    private String orb = " -ORBInitialHost " + StarterMain.nsHost
+            + " -ORBInitialPort " + StarterMain.nsPort;
     private ArrayList<String> prozesse;
+    private ArrayList<StreamGobbler> gobbler = new ArrayList<StreamGobbler>();
 
     public StarterImpl(final String name) {
         m_name = name;
@@ -43,20 +46,30 @@ public class StarterImpl extends StarterPOA {
 
     @Override
     public void setAnzahlProzesse(int anzahl) {
-    	System.out.println("setAnzahlProzesse(" + anzahl + ")");
+        System.out.println("setAnzahlProzesse(" + anzahl + ")");
         Runtime r = Runtime.getRuntime();
         String name;
         while (anzahl-- > 0) {
-            name = ManagementFactory.getRuntimeMXBean().getName().split("@")[0]
-                    + "-" + m_name + "-" + anzahl;
+            name = m_name
+                    + "-"
+                    + ManagementFactory.getRuntimeMXBean().getName().split("@")[0]
+                    + "-" + anzahl;
             prozesse.add(name);
             String arg = command + " --name=" + name + " --nameserverport="
                     + StarterMain.nsPort + " --nameserverhost="
                     + StarterMain.nsHost + " --koordinator="
                     + StarterMain.koordinator + " " + orb;
             try {
-				r.exec(arg);
-				System.out.println(arg);
+                Process p = r.exec(arg);
+                StreamGobbler sg = new StreamGobbler(p.getInputStream(), name
+                        + "OUTPUT", System.out);
+                sg.start();
+                gobbler.add(sg);
+                sg = new StreamGobbler(p.getErrorStream(), name + "ERROR",
+                        System.err);
+                sg.start();
+                gobbler.add(sg);
+                System.out.println(arg);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -66,7 +79,7 @@ public class StarterImpl extends StarterPOA {
 
     @Override
     public void beenden(String prozessIdAbsender) {
-    	System.out.println("beenden(" + prozessIdAbsender + ")");
+        System.out.println("beenden(" + prozessIdAbsender + ")");
         if (prozessIdAbsender.startsWith("CLIENT")
                 || prozessIdAbsender.startsWith("KOORD")) {
             System.out
@@ -82,7 +95,6 @@ public class StarterImpl extends StarterPOA {
 
     @Override
     public void beendeProzesse(String prozessIdAbsender) {
-    	System.out.println("beendeProzesse(" + prozessIdAbsender + ")");
         if (prozessIdAbsender.startsWith("CLIENT")
                 || prozessIdAbsender.startsWith("KOORD")) {
             System.out
@@ -101,6 +113,7 @@ public class StarterImpl extends StarterPOA {
                 e.printStackTrace();
             }
         }
+        prozesse.clear();
     }
 
     private Object getCorbaObjectByString(String string) throws NotFound,
