@@ -19,7 +19,10 @@ public class StarterImpl extends StarterPOA {
     private static int STARTER_ID = 0;
     public String m_name;
     private Semaphore running;
-    private final String command = "java ./../ggTProzess/bin/GgTProcessMain";
+    //private final String command = "java ./../ggTProzess/bin/GgTProcessMain";
+    private final String cp_absolut = "D:/gitrepos/vs-a2/code/ggTProzess/bin";
+    private final String command = "java -cp " + cp_absolut + " ggTProcess.GgTProcessMain";
+    private String orb = " -ORBInitialHost localhost -ORBInitialPort 2000";
     private ArrayList<String> prozesse;
 
     public StarterImpl(final String name) {
@@ -40,6 +43,7 @@ public class StarterImpl extends StarterPOA {
 
     @Override
     public void setAnzahlProzesse(int anzahl) {
+    	System.out.println("setAnzahlProzesse(" + anzahl + ")");
         Runtime r = Runtime.getRuntime();
         String name;
         while (anzahl-- > 0) {
@@ -49,9 +53,10 @@ public class StarterImpl extends StarterPOA {
             String arg = command + " --name=" + name + " --nameserverport="
                     + StarterMain.nsPort + " --nameserverhost="
                     + StarterMain.nsHost + " --koordinator="
-                    + StarterMain.koordinator;
+                    + StarterMain.koordinator + " " + orb;
             try {
-                r.exec(arg);
+				r.exec(arg);
+				System.out.println(arg);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -61,6 +66,7 @@ public class StarterImpl extends StarterPOA {
 
     @Override
     public void beenden(String prozessIdAbsender) {
+    	System.out.println("beenden(" + prozessIdAbsender + ")");
         if (prozessIdAbsender.startsWith("CLIENT")
                 || prozessIdAbsender.startsWith("KOORD")) {
             System.out
@@ -76,6 +82,7 @@ public class StarterImpl extends StarterPOA {
 
     @Override
     public void beendeProzesse(String prozessIdAbsender) {
+    	System.out.println("beendeProzesse(" + prozessIdAbsender + ")");
         if (prozessIdAbsender.startsWith("CLIENT")
                 || prozessIdAbsender.startsWith("KOORD")) {
             System.out

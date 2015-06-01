@@ -203,16 +203,19 @@ public class KoordinatorImpl extends KoordinatorPOA {
         // handle only current sequenzNumbers
         if (currentSeqNr == sequenzNr) {
             if (terminierteProzesse.containsKey(prozessId)) {
-                terminierteProzesse.replace(prozessId, termStatus);
+                terminierteProzesse.remove(prozessId);
+                terminierteProzesse.put(prozessId, termStatus);
             } else { // add the prozess
                 terminierteProzesse.put(prozessId, termStatus);
             }
             // check, if all prozesses are terminated
             if (terminierteProzesse.size() == prozessList.size()) {
                 terminiert = 0;
-                terminierteProzesse
-                        .forEach((string, bool) -> terminiert = (bool) ? terminiert + 1
-                                : terminiert);
+                for (String key : terminierteProzesse.keySet()) {
+                	if (terminierteProzesse.get(key)) {
+                		terminiert += 1;
+                	}
+                }
                 if (terminiert == prozessList.size()) {
                     // algorithmus terminated!
                     algorithmRunning = false;
@@ -227,13 +230,18 @@ public class KoordinatorImpl extends KoordinatorPOA {
 
     @Override
     public String[] getStarterIds() {
-        if (algorithmRunning) {
+        /*if (algorithmRunning) {
             System.out
                     .println("Algorithm still running - no starter available");
             String[] result = new String[0];
             return result;
+        }*/
+        String ret[] = new String[starterList.size()];
+        int idx = 0;
+        for (StarterData s : starterList) {
+        	ret[idx] = s.getName();
         }
-        return (String[]) starterList.toArray();
+        return ret;
     }
 
     @Override

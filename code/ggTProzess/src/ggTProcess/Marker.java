@@ -2,8 +2,6 @@ package ggTProcess;
 
 
 public class Marker implements IJob {
-
-    
     private String prozessIdAbsender;
     private int seqNr;
 
