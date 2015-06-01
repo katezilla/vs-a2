@@ -1,1 +1,4 @@
 java -jar GGTMonitor.jar <MonitorName> -ORBInitialHost <host> -ORBInitialPort <port>
+
+--name=KOORD_jk --nameserverport=20000 --nameserverhost=localhost
+--name=STARTER_jk_a --nameserverport=20000 --nameserverhost=localhost --koordinator=KOORD_jk

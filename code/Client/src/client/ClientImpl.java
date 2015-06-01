@@ -135,6 +135,13 @@ public class ClientImpl extends ClientPOA {
                 }
                 break;
             case "beenden":
+                tempInput = JOptionPane.showInputDialog(null,
+                        "Bitte geben Sie Koordinator-namen ein:");
+                nameKoordinator = (tempInput == null) ? nameKoordinator
+                        : tempInput;
+                koordinator = KoordinatorHelper.narrow(nc
+                        .resolve_str(nameKoordinator));
+                koordinator.beenden("CLIENT_");
                 running = false;
                 System.out.println("System wird beendet");
                 break;

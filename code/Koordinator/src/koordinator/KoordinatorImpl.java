@@ -288,6 +288,7 @@ public class KoordinatorImpl extends KoordinatorPOA {
                 e.printStackTrace();
             }
         }
+        //TODO: beenden self
     }
 
     public void run() {
@@ -351,8 +352,8 @@ public class KoordinatorImpl extends KoordinatorPOA {
         shutdownAlgorithm = true;
         try {
             termAlgorithm.join();
-        } catch (InterruptedException e1) {
-            e1.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
