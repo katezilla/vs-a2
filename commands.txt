@@ -1,4 +1,19 @@
-java -jar GGTMonitor.jar <MonitorName> -ORBInitialHost <host> -ORBInitialPort <port>
+"C:\Program Files\Java\jdk1.8.0_31\bin\orbd"  -ORBInitialPort 20000
+java -jar GGTMonitor.jar MONITOR -ORBInitialHost localhost -ORBInitialPort 20000
 
 --name=KOORD_jk --nameserverport=20000 --nameserverhost=localhost
 --name=STARTER_jk_a --nameserverport=20000 --nameserverhost=localhost --koordinator=KOORD_jk
+
+
+ssh-keygen ~/.ssh
+cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
+ssh lab27
+
+cd ~/git/vs-a2/code/Koordinator/bin
+java koordinator/KoordinatorMain --name=KOORD_jk --nameserverport=5000 --nameserverhost=lab22
+
+cd ~/git/vs-a2/code/Starter/bin
+for (( i=0;i<=10;i=i+1)); do java starter/StarterMain --name=STARTjk$i --nameserverport=5000 --nameserverhost=lab22 & done
+
+cd ~/git/vs-a2/code/Client/bin
+java client/ClientImpl
