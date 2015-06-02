@@ -1,5 +1,6 @@
 package starter;
 
+import java.lang.management.ManagementFactory;
 import java.util.Properties;
 
 import koordinator.Koordinator;
@@ -37,6 +38,9 @@ public class StarterMain {
             if (koordinator.isEmpty()) {
                 return;
             }
+
+            starterName = starterName
+                    + ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
 
             Properties props = new Properties();
             props.put("org.omg.CORBA.ORBInitialPort", nsPort);

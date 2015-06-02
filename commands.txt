@@ -13,7 +13,7 @@ cd ~/git/vs-a2/code/Koordinator/bin
 java koordinator/KoordinatorMain --name=KOORD_jk --nameserverport=5000 --nameserverhost=lab22
 
 cd ~/git/vs-a2/code/Starter/bin
-for (( i=0;i<=10;i=i+1)); do java starter/StarterMain --name=STARTjk$i --nameserverport=5000 --nameserverhost=lab22 & done
+for (( i=0;i<=0;i=i+1)); do java starter/StarterMain --name=STARTjk$i --nameserverport=5000 --nameserverhost=lab21 --koordinator=KO_jk & done
 
 cd ~/git/vs-a2/code/Client/bin
-java client/ClientImpl
+java client/ClientImpl --nameserverport=5000 --nameserverhost=lab21

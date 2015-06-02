@@ -41,7 +41,7 @@ public class KoordinatorMain {
             nc = NamingContextExtHelper.narrow(orb
                     .resolve_initial_references("NameService"));
 
-            KoordinatorImpl obj = new KoordinatorImpl(name);
+            KoordinatorImpl obj = new KoordinatorImpl(name,nc);
 
             // register at the naming context
             org.omg.CORBA.Object ref = rootPoa.servant_to_reference(obj);

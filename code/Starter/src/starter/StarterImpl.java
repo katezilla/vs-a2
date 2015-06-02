@@ -20,7 +20,7 @@ public class StarterImpl extends StarterPOA {
     public String m_name;
     private Semaphore running;
     // absolute path to directory!
-    private final String cp_absolut = "D:/Programming/haw/15_ss/vsp2/code/ggTProzess/bin";
+    private final String cp_absolut = "/home/students/abo278/git/vs-a2/code/ggTProzess/bin";
     private final String command = "java -cp " + cp_absolut
             + " ggTProcess.GgTProcessMain";
     private String orb = " -ORBInitialHost " + StarterMain.nsHost
@@ -50,10 +50,7 @@ public class StarterImpl extends StarterPOA {
         Runtime r = Runtime.getRuntime();
         String name;
         while (anzahl-- > 0) {
-            name = m_name
-                    + "-"
-                    + ManagementFactory.getRuntimeMXBean().getName().split("@")[0]
-                    + "-" + anzahl;
+            name = m_name + "-" + anzahl;
             prozesse.add(name);
             String arg = command + " --name=" + name + " --nameserverport="
                     + StarterMain.nsPort + " --nameserverhost="
